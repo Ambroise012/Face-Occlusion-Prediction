@@ -1,0 +1,10 @@
+/.venv
+
+/crops/
+
+*.pdf
+
+DataChallenge2026/first_test.py
+
+__pycache__/
+*.py[cod]
