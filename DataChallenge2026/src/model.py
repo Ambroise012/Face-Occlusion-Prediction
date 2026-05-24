@@ -17,21 +17,36 @@ def get_model():
         device: Device (CPU or CUDA) the model is on
     """
     # Initialize model
-    if MODEL_NAME == "mobilenet_v3_small":
-        model = models.mobilenet_v3_small(num_classes=NUM_CLASSES)
+    if MODEL_NAME == "efficientnet_b0":
+
+        # pretrained weights
+        weights = models.EfficientNet_B0_Weights.DEFAULT
+
+        model = models.efficientnet_b0(weights=weights)
+
+        in_features = model.classifier[1].in_features
+
+        # Regression head
+        model.classifier[1] = nn.Sequential(
+            nn.Dropout(0.3),
+            nn.Linear(in_features, 128),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(128, 1),
+            nn.Sigmoid()
+        )
+
     else:
         raise ValueError(f"Unknown model: {MODEL_NAME}")
 
     # Configure CUDA
     if USE_CUDA and torch.cuda.is_available():
-        device = torch.device("cuda:0")
+        device = torch.device("cuda")
         torch.backends.cudnn.benchmark = True
     else:
         device = torch.device("cpu")
 
-    # Move model to device
     model = model.to(device)
-
     return model, device
 
 def get_loss_and_optimizer(model):
@@ -45,7 +60,20 @@ def get_loss_and_optimizer(model):
         loss_fn: Loss function
         optimizer: Optimizer
     """
-    loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    # loss_fn = nn.MSELoss()
+    loss_fn = nn.SmoothL1Loss(beta=0.1)
 
+    # optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=1e-4,
+        weight_decay=1e-4
+    )
+
+    # LR scheduler
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer,
+        T_max=10
+    )
+    
     return loss_fn, optimizer

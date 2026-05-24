@@ -14,7 +14,7 @@ LEARNING_RATE = 0.001
 NUM_EPOCHS = 1
 
 # Model parameters
-MODEL_NAME = "mobilenet_v3_small"
+MODEL_NAME = "efficientnet_b0" # "mobilenet_v3_small"
 NUM_CLASSES = 1
 
 # Device
