@@ -25,12 +25,12 @@
 
 
 ## 📊 **Tableau récapitulatif**
-| Métrique               | Valeur       | Interprétation                     | Problème ? |
-|------------------------|--------------|------------------------------------|------------|
-| **% Hommes**           | 67.7%        | Déséquilibre genre                 | ❌ **Oui** |
-| **% Femmes**           | 32.3%        | Sous-représentées                  | ❌ **Oui** |
-| **FaceOcclusion < 0.1**| 68.8%        | Majority class dominant            | ❌ **Oui** |
-| **FaceOcclusion > 0.4**| 0.2%         | Classe minoritaire extrême         | ❌ **Oui** |
+| Métrique               | Valeur       | Interprétation                     | 
+|------------------------|--------------|------------------------------------|
+| **% Hommes**           | 67.7%        | Déséquilibre genre                 |
+| **% Femmes**           | 32.3%        | Sous-représentées                  |
+| **FaceOcclusion < 0.1**| 68.8%        | Majority class dominant            |
+| **FaceOcclusion > 0.4**| 0.2%         | Classe minoritaire extrême         |
 
 ---
 

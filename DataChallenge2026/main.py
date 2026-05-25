@@ -2,60 +2,168 @@
 Main script for occlusion detection project.
 Orchestrates data loading, training, validation, and testing.
 """
-
-import torch
-from src.dataset import load_data, validate_images, create_datasets, create_dataloaders
+from src.dataset import load_data, create_datasets, create_dataloaders
 from src.model import get_model, get_loss_and_optimizer
 from src.train import train_model
 from src.inference import validate, test
-from config import IMAGE_DIR, NUM_EPOCHS, OUTPUT_PRED
+from metrics import evaluate_results, error_fn
+
+from config import NUM_EPOCHS, OUTPUT_PRED, PATIENCE
+
 
 def main():
     """Main execution function."""
     print("Loading and preparing data...")
 
     # Load data
-    df_train, df_val, df_test = load_data()
+    train_df, val_df, test_df = load_data()
 
-    # Validate images (optional, can be slow)
-    # validate_images(df_train, IMAGE_DIR, "training")
-    # validate_images(df_val, IMAGE_DIR, "validation")
-    # validate_images(df_test, IMAGE_DIR, "test")
-
-    # Create datasets and dataloaders
     training_set, validation_set, test_set = create_datasets(
-        df_train, df_val, df_test
+        train_df,
+        val_df,
+        test_df
     )
+
     training_loader, validation_loader, test_loader = create_dataloaders(
-        training_set, validation_set, test_set
+        training_set,
+        validation_set,
+        test_set,
+        train_df
     )
 
     print("Initializing model...")
+    model, device = get_model() 
 
-    # Initialize model
-    model, device = get_model()
-    loss_fn, optimizer = get_loss_and_optimizer(model)
+    loss_fn, optimizer, scheduler = get_loss_and_optimizer(model)
 
-    print(f"Using device: {device}")
-
-    # Train model
-    print(f"\nTraining for {NUM_EPOCHS} epoch(s)...")
-    model = train_model(
-        model, training_loader, validation_loader,
-        loss_fn, optimizer, device
+    model, history = train_model(
+        model=model,
+        training_loader=training_loader,
+        validation_loader=validation_loader,
+        loss_fn=loss_fn,
+        optimizer=optimizer,
+        scheduler=scheduler,
+        device=device,
+        num_epochs=NUM_EPOCHS,
+        patience=PATIENCE,
+        min_delta=0.0005
     )
 
-    # Validate model
-    print("\nRunning validation...")
-    val_results, metric_score = validate(model, validation_loader, device)
-    print(f"Validation metric: {metric_score:.6f}")
+    # VALIDATION
+    val_results, val_mae, metric_score = validate(
+        model,
+        validation_loader,
+        device
+    )
 
-    # Test model
-    print("\nRunning inference on test set...")
-    test_results = test(model, test_loader, device)
-    print(f"Test predictions saved to {OUTPUT_PRED}")
+    # SPLIT METRICS
+    male_results = val_results[val_results["gender"] == 1.0]
+    female_results = val_results[val_results["gender"] == 0.0]
 
-    print("\nDone!")
+    male_metric = error_fn(male_results)
+    female_metric = error_fn(female_results)
+    fairness_gap = abs(male_metric - female_metric)
+
+    # OCCLUSION BIN ANALYSIS
+    low_occ = val_results[val_results["target"] < 0.1]
+
+    medium_occ = val_results[
+        (val_results["target"] >= 0.1)
+        &
+        (val_results["target"] < 0.4)
+    ]
+
+    high_occ = val_results[
+        val_results["target"] >= 0.4
+    ]
+
+    low_occ_mae = (
+        abs(low_occ["pred"] - low_occ["target"]).mean()
+        if len(low_occ) > 0
+        else 0
+    )
+
+    medium_occ_mae = (
+        abs(medium_occ["pred"] - medium_occ["target"]).mean()
+        if len(medium_occ) > 0
+        else 0
+    )
+
+    high_occ_mae = (
+        abs(high_occ["pred"] - high_occ["target"]).mean()
+        if len(high_occ) > 0
+        else 0
+    )
+
+    # VALIDATION RESULTS
+    print("\n====================================")
+    print("VALIDATION")
+    print("====================================")
+    print(f"\nValidation MAE: {val_mae * 100:.2f}%")
+    print(f"Challenge Metric: {metric_score:.6f}")
+    print(f"\nMale Metric: {male_metric:.6f}")
+    print(f"Female Metric: {female_metric:.6f}")
+    print(f"Fairness Gap: {fairness_gap:.6f}")
+
+    # OCCLUSION ANALYSIS
+    print("\n====================================")
+    print("OCCLUSION BIN ANALYSIS")
+    print("====================================")
+    print(f"\nLow Occlusion (<10%) MAE: {low_occ_mae * 100:.2f}%")
+    print(f"Medium Occlusion (10-40%) MAE: {medium_occ_mae * 100:.2f}%")
+    print(f"High Occlusion (>40%) MAE: {high_occ_mae * 100:.2f}%")
+    print(f"\nLow Occlusion Samples: {len(low_occ)}")
+    print(f"Medium Occlusion Samples: {len(medium_occ)}")
+    print(f"High Occlusion Samples: {len(high_occ)}")
+
+    # PREDICTION DISTRIBUTION
+    print("\n====================================")
+    print("PREDICTION DISTRIBUTION")
+    print("====================================")
+    print(f"\nTarget Mean: {val_results['target'].mean():.4f}")
+    print(f"Prediction Mean: {val_results['pred'].mean():.4f}")
+    print(f"\nTarget Max: {val_results['target'].max():.4f}")
+    print(f"Prediction Max: {val_results['pred'].max():.4f}")
+
+    # TEST INFERENCE
+    print("\n====================================")
+    print("TEST INFERENCE")
+    print("====================================")
+    test(model, test_loader, device)
+
+    print(f"\nPredictions saved to:")
+    print(OUTPUT_PRED)
+
+    # TRAINING SUMMARY
+    print("\n====================================")
+    print("TRAINING SUMMARY")
+    print("====================================")
+
+    best_train_mae = min(
+        history["train_mae"]
+    )
+
+    best_val_mae = min(
+        history["val_mae"]
+    )
+
+    print(f"\nBest Train MAE: {best_train_mae * 100:.2f}%")
+
+    print(f"Best Validation MAE: {best_val_mae * 100:.2f}%")
+
+    generalization_gap = (
+        best_val_mae - best_train_mae
+    ) * 100
+
+    print(f"\nGeneralization Gap: {generalization_gap:.2f}%")
+
+    if generalization_gap > 5:
+        print(
+            "\nWARNING:"
+            " may overfit."
+        )
+
+    print("\n========== DONE ==========")
 
 if __name__ == "__main__":
     main()

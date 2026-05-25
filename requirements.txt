@@ -7,3 +7,4 @@ prettytable
 torch
 torchvision
 tqdm
+scikit-learn

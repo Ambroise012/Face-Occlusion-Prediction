@@ -1,12 +1,4 @@
-Voici ton **README.md** court et concis :
-
----
-
----
-
-### **📄 `README.md`**
-```markdown
-# 🔍 Détection d'Occlusion Faciale
+# Face Occlusion Prediction
 
 > Projet PyTorch pour prédire le niveau d'occlusion du visage (`FaceOcclusion`) à partir d'images.
 
@@ -15,6 +7,12 @@ Voici ton **README.md** court et concis :
 ## 📁 Structure
 ```bash
 project/
+├── src/          # Chemins et hyperparamètres
+|    ├── dataset.py            # Script principal
+|    ├── main.py            # Script principal
+|    ├── main.py            # Script principal
+|    ├── main.py            # Script principal
+|    └── analyze_dataset.py # Analyse exploratoire des données
 ├── config.py          # Chemins et hyperparamètres
 ├── dataset.py         # Chargement des données et DataLoaders
 ├── model.py           # Architecture du modèle (MobileNetV3)
