@@ -285,10 +285,7 @@ def create_dataloaders(
 
 #     return sampler
 
-
 def create_weighted_sampler(df):
-    
-
     group_counts = (
         df['group']
         .value_counts()

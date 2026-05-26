@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=version1
+#SBATCH --job-name=version2
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
 #SBATCH --time=02:00:00
