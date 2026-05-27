@@ -4,45 +4,111 @@ Handles data loading, preprocessing, and DataLoader creation.
 """
 
 import pandas as pd
+import numpy as np
 from PIL import Image
 from tqdm import tqdm
 import torch
 import torchvision.transforms as transforms
-from config import IMAGE_DIR, TRAIN_CSV, TEST_CSV, VAL_SIZE, BATCH_SIZE, NUM_WORKERS
+from torch.utils.data import DataLoader, WeightedRandomSampler
+from sklearn.model_selection import train_test_split
+
+from config import IMAGE_DIR, TRAIN_CSV, TEST_CSV, BATCH_SIZE, NUM_WORKERS
+
+
+# =========================================================
+# TRANSFORMS
+# =========================================================
+
+train_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.RandomHorizontalFlip(p=0.5),
+    transforms.RandomRotation(10),
+    transforms.ColorJitter(
+        brightness=0.2,
+        contrast=0.2,
+        saturation=0.2,
+        hue=0.1
+    ),
+    transforms.ToTensor(),
+    transforms.RandomErasing(
+        p=0.5,
+        scale=(0.02, 0.25),
+        ratio=(0.3, 3.3),
+        value='random'
+    ),
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    )
+])
+
+
+val_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    )
+])
+
 
 class OcclusionDataset(torch.utils.data.Dataset):
-    """PyTorch Dataset for occlusion detection."""
+    def __init__(
+        self,
+        df,
+        image_dir,
+        transform,
+        training=True
+    ):
 
-    def __init__(self, df, image_dir, training=True):
-        """
-        Args:
-            df: DataFrame containing image filenames and labels
-            image_dir: Directory containing images
-            training: If True, returns labels; if False, returns only images
-        """
-        self.training = training
+        self.df = df.reset_index(drop=True)
         self.image_dir = image_dir
-        self.df = df
-        self.transform = transforms.ToTensor()
+        self.transform = transform
+        self.training = training
 
     def __len__(self):
         return len(self.df)
 
     def __getitem__(self, index):
-        row = self.df.loc[index]
+        row = self.df.iloc[index]
         filename = row['filename']
-
-        # Load image
-        img = Image.open(f"{self.image_dir}/{filename}")
-        X = self.transform(img)
+        path = f"{self.image_dir}/{filename}"
+        image = Image.open(path).convert("RGB")
+        image = self.transform(image)
 
         if self.training:
-            y = row['FaceOcclusion']
-            y = float(y)  # Convert to Python float for compatibility
+            # normalized target between 0 and 1
+            target = float(row['FaceOcclusion'])
             gender = row['gender']
-            return X, y, gender, filename
-        else:
-            return X, filename
+            return image, target, gender, filename
+
+        return image, filename
+
+# =========================================================
+# BINS FOR BALANCING (equalize)
+# =========================================================
+
+def create_occlusion_bins(df):
+    bins = [0, 0.1, 0.2, 0.3, 0.4, 1.0]
+
+    df['occ_bin'] = np.digitize(
+        df['FaceOcclusion'],
+        bins
+    )
+    return df
+
+
+def create_combined_group(df):
+    df['group'] = (
+        df['gender'].astype(str)
+        + "_"
+        + df['occ_bin'].astype(str)
+    )
+    return df
+
+
+
 
 def load_data():
     """Load and preprocess training and test data."""
@@ -54,11 +120,31 @@ def load_data():
     df_train = df_train.dropna()
     df_test = df_test.dropna()
 
-    # Split training into train and validation
-    df_val = df_train.loc[:VAL_SIZE].reset_index(drop=True)
-    df_train = df_train.loc[VAL_SIZE:].reset_index(drop=True)
+    # normalize labels between 0 and 1
+    if df_train['FaceOcclusion'].max() > 1.0:
 
-    return df_train, df_val, df_test
+        df_train['FaceOcclusion'] /= 100.0
+
+    # create balancing bins
+    df_train = create_occlusion_bins(df_train)
+
+    # combine gender + occlusion
+    df_train = create_combined_group(df_train)
+
+    # stratified split
+    train_df, val_df = train_test_split(
+        df_train,
+        test_size=0.2,
+        stratify=df_train['group'],
+        random_state=42
+    )
+
+    train_df = train_df.reset_index(drop=True)
+
+    val_df = val_df.reset_index(drop=True)
+
+    return train_df, val_df, df_test
+
 
 def validate_images(df, image_dir, set_name):
     """
@@ -77,30 +163,107 @@ def validate_images(df, image_dir, set_name):
         except (ValueError, FileNotFoundError) as e:
             print(f"Error at index {idx}: {e}")
 
-def create_datasets(df_train, df_val, df_test, image_dir=IMAGE_DIR):
-    """Create dataset objects for training, validation, and test."""
-    training_set = OcclusionDataset(df_train, image_dir, training=True)
-    validation_set = OcclusionDataset(df_val, image_dir, training=True)
-    test_set = OcclusionDataset(df_test, image_dir, training=False)
+def create_datasets(
+    train_df,
+    val_df,
+    test_df
+):
 
-    return training_set, validation_set, test_set
+    training_set = OcclusionDataset(
+        train_df,
+        IMAGE_DIR,
+        transform=train_transform,
+        training=True
+    )
 
-def create_dataloaders(training_set, validation_set, test_set):
-    """Create DataLoader objects for training, validation, and test."""
-    params_train = {
-        'batch_size': BATCH_SIZE,
-        'shuffle': True,
-        'num_workers': NUM_WORKERS
-    }
+    validation_set = OcclusionDataset(
+        val_df,
+        IMAGE_DIR,
+        transform=val_transform,
+        training=True
+    )
 
-    params_val = {
-        'batch_size': BATCH_SIZE,
-        'shuffle': False,
-        'num_workers': NUM_WORKERS
-    }
+    test_set = OcclusionDataset(
+        test_df,
+        IMAGE_DIR,
+        transform=val_transform,
+        training=False
+    )
 
-    training_loader = torch.utils.data.DataLoader(training_set, **params_train)
-    validation_loader = torch.utils.data.DataLoader(validation_set, **params_val)
-    test_loader = torch.utils.data.DataLoader(test_set, **params_val)
+    return (
+        training_set,
+        validation_set,
+        test_set
+    )
 
-    return training_loader, validation_loader, test_loader
+
+def create_dataloaders(
+    training_set,
+    validation_set,
+    test_set,
+    train_df
+):
+
+    sampler = create_weighted_sampler(
+        train_df
+    )
+
+    training_loader = DataLoader(
+        training_set,
+        batch_size=BATCH_SIZE,
+        sampler=sampler,
+        num_workers=NUM_WORKERS,
+        pin_memory=True
+    )
+
+    validation_loader = DataLoader(
+        validation_set,
+        batch_size=BATCH_SIZE,
+        shuffle=False,
+        num_workers=NUM_WORKERS,
+        pin_memory=True
+    )
+
+    test_loader = DataLoader(
+        test_set,
+        batch_size=BATCH_SIZE,
+        shuffle=False,
+        num_workers=NUM_WORKERS,
+        pin_memory=True
+    )
+
+    return (
+        training_loader,
+        validation_loader,
+        test_loader
+    )
+
+
+# =========================================================
+# WEIGHTED SAMPLER
+# =========================================================
+def create_weighted_sampler(df):
+    group_counts = (
+        df['group']
+        .value_counts()
+    )
+
+    group_weights = 1.0 / group_counts
+
+    sample_weights = (
+        df['group']
+        .map(group_weights)
+        .values
+    )
+
+    sample_weights = torch.DoubleTensor(
+        sample_weights
+    )
+
+    sampler = WeightedRandomSampler(
+        sample_weights,
+        num_samples=len(sample_weights),
+        replacement=True
+    )
+
+    return sampler

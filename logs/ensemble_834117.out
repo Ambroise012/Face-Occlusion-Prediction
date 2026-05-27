@@ -1,0 +1,589 @@
+Wed May 27 08:12:59 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.126.18             Driver Version: 580.126.18     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  Tesla P100-PCIE-16GB           Off |   00000000:82:00.0 Off |                    0 |
+| N/A   29C    P0             24W /  250W |       0MiB /  16384MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+Loading and preparing data...
+
+Training convnext_tiny
+
+Epoch 1/20
+
+--------------------------------
+Train Loss: 0.0177
+Train MAE: 2.93%
+Val Loss: 0.0078
+Val MAE: 2.40%
+Learning Rate: 0.0000976
+--------------------------------
+
+Best model saved (Val MAE: 2.40%)
+
+Epoch 2/20
+
+--------------------------------
+Train Loss: 0.0089
+Train MAE: 2.14%
+Val Loss: 0.0056
+Val MAE: 1.76%
+Learning Rate: 0.0000905
+--------------------------------
+
+Best model saved (Val MAE: 1.76%)
+
+Epoch 3/20
+
+--------------------------------
+Train Loss: 0.0071
+Train MAE: 1.90%
+Val Loss: 0.0052
+Val MAE: 1.67%
+Learning Rate: 0.0000794
+--------------------------------
+
+Best model saved (Val MAE: 1.67%)
+
+Epoch 4/20
+
+--------------------------------
+Train Loss: 0.0059
+Train MAE: 1.73%
+Val Loss: 0.0049
+Val MAE: 1.65%
+Learning Rate: 0.0000655
+--------------------------------
+
+EarlyStopping: 1/5
+
+Epoch 5/20
+
+--------------------------------
+Train Loss: 0.0050
+Train MAE: 1.60%
+Val Loss: 0.0046
+Val MAE: 1.57%
+Learning Rate: 0.0000500
+--------------------------------
+
+Best model saved (Val MAE: 1.57%)
+
+Epoch 6/20
+
+--------------------------------
+Train Loss: 0.0042
+Train MAE: 1.47%
+Val Loss: 0.0049
+Val MAE: 1.68%
+Learning Rate: 0.0000345
+--------------------------------
+
+EarlyStopping: 1/5
+
+Epoch 7/20
+
+--------------------------------
+Train Loss: 0.0036
+Train MAE: 1.35%
+Val Loss: 0.0044
+Val MAE: 1.55%
+Learning Rate: 0.0000206
+--------------------------------
+
+EarlyStopping: 2/5
+
+Epoch 8/20
+
+--------------------------------
+Train Loss: 0.0031
+Train MAE: 1.26%
+Val Loss: 0.0040
+Val MAE: 1.42%
+Learning Rate: 0.0000095
+--------------------------------
+
+Best model saved (Val MAE: 1.42%)
+
+Epoch 9/20
+
+--------------------------------
+Train Loss: 0.0028
+Train MAE: 1.20%
+Val Loss: 0.0039
+Val MAE: 1.38%
+Learning Rate: 0.0000024
+--------------------------------
+
+EarlyStopping: 1/5
+
+Epoch 10/20
+
+--------------------------------
+Train Loss: 0.0027
+Train MAE: 1.17%
+Val Loss: 0.0039
+Val MAE: 1.38%
+Learning Rate: 0.0000000
+--------------------------------
+
+EarlyStopping: 2/5
+
+Epoch 11/20
+
+--------------------------------
+Train Loss: 0.0026
+Train MAE: 1.16%
+Val Loss: 0.0039
+Val MAE: 1.38%
+Learning Rate: 0.0000024
+--------------------------------
+
+EarlyStopping: 3/5
+
+Epoch 12/20
+
+--------------------------------
+Train Loss: 0.0026
+Train MAE: 1.16%
+Val Loss: 0.0038
+Val MAE: 1.37%
+Learning Rate: 0.0000095
+--------------------------------
+
+EarlyStopping: 4/5
+
+Epoch 13/20
+
+--------------------------------
+Train Loss: 0.0026
+Train MAE: 1.16%
+Val Loss: 0.0040
+Val MAE: 1.41%
+Learning Rate: 0.0000206
+--------------------------------
+
+EarlyStopping: 5/5
+
+EARLY STOPPING
+
+Loading best model...
+Best Validation MAE: 1.42%
+
+Training completed.
+
+Training efficientnet_b2
+
+Epoch 1/20
+
+--------------------------------
+Train Loss: 0.0306
+Train MAE: 4.03%
+Val Loss: 0.0078
+Val MAE: 2.27%
+Learning Rate: 0.0000976
+--------------------------------
+
+Best model saved (Val MAE: 2.27%)
+
+Epoch 2/20
+
+--------------------------------
+Train Loss: 0.0114
+Train MAE: 2.49%
+Val Loss: 0.0064
+Val MAE: 2.11%
+Learning Rate: 0.0000905
+--------------------------------
+
+Best model saved (Val MAE: 2.11%)
+
+Epoch 3/20
+
+--------------------------------
+Train Loss: 0.0082
+Train MAE: 2.09%
+Val Loss: 0.0054
+Val MAE: 1.75%
+Learning Rate: 0.0000794
+--------------------------------
+
+Best model saved (Val MAE: 1.75%)
+
+Epoch 4/20
+
+--------------------------------
+Train Loss: 0.0067
+Train MAE: 1.88%
+Val Loss: 0.0052
+Val MAE: 1.73%
+Learning Rate: 0.0000655
+--------------------------------
+
+EarlyStopping: 1/5
+
+Epoch 5/20
+
+--------------------------------
+Train Loss: 0.0057
+Train MAE: 1.73%
+Val Loss: 0.0060
+Val MAE: 1.92%
+Learning Rate: 0.0000500
+--------------------------------
+
+EarlyStopping: 2/5
+
+Epoch 6/20
+
+--------------------------------
+Train Loss: 0.0048
+Train MAE: 1.59%
+Val Loss: 0.0047
+Val MAE: 1.59%
+Learning Rate: 0.0000345
+--------------------------------
+
+Best model saved (Val MAE: 1.59%)
+
+Epoch 7/20
+
+--------------------------------
+Train Loss: 0.0043
+Train MAE: 1.49%
+Val Loss: 0.0049
+Val MAE: 1.65%
+Learning Rate: 0.0000206
+--------------------------------
+
+EarlyStopping: 1/5
+
+Epoch 8/20
+
+--------------------------------
+Train Loss: 0.0038
+Train MAE: 1.41%
+Val Loss: 0.0045
+Val MAE: 1.54%
+Learning Rate: 0.0000095
+--------------------------------
+
+Best model saved (Val MAE: 1.54%)
+
+Epoch 9/20
+
+--------------------------------
+Train Loss: 0.0035
+Train MAE: 1.35%
+Val Loss: 0.0044
+Val MAE: 1.50%
+Learning Rate: 0.0000024
+--------------------------------
+
+EarlyStopping: 1/5
+
+Epoch 10/20
+
+--------------------------------
+Train Loss: 0.0034
+Train MAE: 1.33%
+Val Loss: 0.0044
+Val MAE: 1.50%
+Learning Rate: 0.0000000
+--------------------------------
+
+EarlyStopping: 2/5
+
+Epoch 11/20
+
+--------------------------------
+Train Loss: 0.0034
+Train MAE: 1.31%
+Val Loss: 0.0044
+Val MAE: 1.51%
+Learning Rate: 0.0000024
+--------------------------------
+
+EarlyStopping: 3/5
+
+Epoch 12/20
+
+--------------------------------
+Train Loss: 0.0033
+Train MAE: 1.30%
+Val Loss: 0.0044
+Val MAE: 1.51%
+Learning Rate: 0.0000095
+--------------------------------
+
+EarlyStopping: 4/5
+
+Epoch 13/20
+
+--------------------------------
+Train Loss: 0.0033
+Train MAE: 1.31%
+Val Loss: 0.0044
+Val MAE: 1.50%
+Learning Rate: 0.0000206
+--------------------------------
+
+EarlyStopping: 5/5
+
+EARLY STOPPING
+
+Loading best model...
+Best Validation MAE: 1.54%
+
+Training completed.
+
+Training efficientnet_v2_s
+
+Epoch 1/20
+
+--------------------------------
+Train Loss: 0.0253
+Train MAE: 3.50%
+Val Loss: 0.0065
+Val MAE: 1.97%
+Learning Rate: 0.0000976
+--------------------------------
+
+Best model saved (Val MAE: 1.97%)
+
+Epoch 2/20
+
+--------------------------------
+Train Loss: 0.0097
+Train MAE: 2.25%
+Val Loss: 0.0062
+Val MAE: 1.92%
+Learning Rate: 0.0000905
+--------------------------------
+
+Best model saved (Val MAE: 1.92%)
+
+Epoch 3/20
+
+--------------------------------
+Train Loss: 0.0075
+Train MAE: 1.96%
+Val Loss: 0.0059
+Val MAE: 1.83%
+Learning Rate: 0.0000794
+--------------------------------
+
+Best model saved (Val MAE: 1.83%)
+
+Epoch 4/20
+
+--------------------------------
+Train Loss: 0.0061
+Train MAE: 1.77%
+Val Loss: 0.0051
+Val MAE: 1.65%
+Learning Rate: 0.0000655
+--------------------------------
+
+Best model saved (Val MAE: 1.65%)
+
+Epoch 5/20
+
+--------------------------------
+Train Loss: 0.0049
+Train MAE: 1.59%
+Val Loss: 0.0048
+Val MAE: 1.58%
+Learning Rate: 0.0000500
+--------------------------------
+
+Best model saved (Val MAE: 1.58%)
+
+Epoch 6/20
+
+--------------------------------
+Train Loss: 0.0042
+Train MAE: 1.47%
+Val Loss: 0.0048
+Val MAE: 1.61%
+Learning Rate: 0.0000345
+--------------------------------
+
+EarlyStopping: 1/5
+
+Epoch 7/20
+
+--------------------------------
+Train Loss: 0.0036
+Train MAE: 1.37%
+Val Loss: 0.0043
+Val MAE: 1.49%
+Learning Rate: 0.0000206
+--------------------------------
+
+Best model saved (Val MAE: 1.49%)
+
+Epoch 8/20
+
+--------------------------------
+Train Loss: 0.0031
+Train MAE: 1.25%
+Val Loss: 0.0044
+Val MAE: 1.49%
+Learning Rate: 0.0000095
+--------------------------------
+
+EarlyStopping: 1/5
+
+Epoch 9/20
+
+--------------------------------
+Train Loss: 0.0028
+Train MAE: 1.19%
+Val Loss: 0.0042
+Val MAE: 1.43%
+Learning Rate: 0.0000024
+--------------------------------
+
+Best model saved (Val MAE: 1.43%)
+
+Epoch 10/20
+
+--------------------------------
+Train Loss: 0.0027
+Train MAE: 1.16%
+Val Loss: 0.0042
+Val MAE: 1.44%
+Learning Rate: 0.0000000
+--------------------------------
+
+EarlyStopping: 1/5
+
+Epoch 11/20
+
+--------------------------------
+Train Loss: 0.0026
+Train MAE: 1.15%
+Val Loss: 0.0042
+Val MAE: 1.44%
+Learning Rate: 0.0000024
+--------------------------------
+
+EarlyStopping: 2/5
+
+Epoch 12/20
+
+--------------------------------
+Train Loss: 0.0026
+Train MAE: 1.14%
+Val Loss: 0.0042
+Val MAE: 1.42%
+Learning Rate: 0.0000095
+--------------------------------
+
+EarlyStopping: 3/5
+
+Epoch 13/20
+
+--------------------------------
+Train Loss: 0.0026
+Train MAE: 1.14%
+Val Loss: 0.0042
+Val MAE: 1.44%
+Learning Rate: 0.0000206
+--------------------------------
+
+EarlyStopping: 4/5
+
+Epoch 14/20
+
+--------------------------------
+Train Loss: 0.0026
+Train MAE: 1.16%
+Val Loss: 0.0043
+Val MAE: 1.43%
+Learning Rate: 0.0000345
+--------------------------------
+
+EarlyStopping: 5/5
+
+EARLY STOPPING
+
+Loading best model...
+Best Validation MAE: 1.43%
+
+Training completed.
+
+====================================
+VALIDATION
+====================================
+
+Validation MAE: 8.39%
+Challenge Metric: 0.001732
+
+Male Metric: 0.001328
+Female Metric: 0.000520
+Fairness Gap: 0.000808
+
+====================================
+OCCLUSION BIN ANALYSIS
+====================================
+
+Low Occlusion (<10%) MAE: 1.15%
+Medium Occlusion (10-40%) MAE: 1.80%
+High Occlusion (>40%) MAE: 8.63%
+
+Low Occlusion Samples: 13786
+Medium Occlusion Samples: 6159
+High Occlusion Samples: 55
+
+====================================
+PREDICTION DISTRIBUTION
+====================================
+
+Target Mean: 0.0827
+Prediction Mean: 0.0828
+
+Target Max: 0.7823
+Prediction Max: 0.4569
+
+====================================
+TEST INFERENCE
+====================================
+
+Predictions saved to:
+DataChallenge2026/out/test_predictions4.csv
+
+====================================
+TRAINING SUMMARY
+====================================
+
+Model: convnext_tiny
+Best Train MAE: 1.16%
+Best Validation MAE: 1.37%
+Generalization Gap: 0.22%
+
+Model: efficientnet_b2
+Best Train MAE: 1.30%
+Best Validation MAE: 1.50%
+Generalization Gap: 0.20%
+
+Model: efficientnet_v2_s
+Best Train MAE: 1.14%
+Best Validation MAE: 1.42%
+Generalization Gap: 0.28%
+
+========== DONE ==========
