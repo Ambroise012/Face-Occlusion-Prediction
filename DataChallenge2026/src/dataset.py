@@ -242,49 +242,6 @@ def create_dataloaders(
 # =========================================================
 # WEIGHTED SAMPLER
 # =========================================================
-
-# def create_weighted_sampler(df):
-
-#     weights = []
-
-#     for _, row in df.iterrows():
-#         target = row['FaceOcclusion']
-#         gender = row['gender']
-
-#         # OCCLUSION WEIGHT
-#         if target > 0.5:
-#             occ_weight = 25
-#         elif target > 0.4:
-#             occ_weight = 15
-#         elif target > 0.3:
-#             occ_weight = 8
-#         elif target > 0.2:
-#             occ_weight = 4
-#         elif target > 0.1:
-#             occ_weight = 2
-#         else:
-#             occ_weight = 1
-
-#         # GENDER BALANCING
-#         gender_weight = 1.8 if gender == 0.0 else 1.0
-
-#         # FINAL WEIGHT
-#         final_weight = (
-#             occ_weight * gender_weight
-#         )
-
-#         weights.append(final_weight)
-
-#     weights = torch.DoubleTensor(weights)
-
-#     sampler = WeightedRandomSampler(
-#         weights,
-#         num_samples=len(weights),
-#         replacement=True
-#     )
-
-#     return sampler
-
 def create_weighted_sampler(df):
     group_counts = (
         df['group']

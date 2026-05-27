@@ -6,6 +6,7 @@
 cmd.txt
 
 DataChallenge2026/first_test.py
+models/
 
 __pycache__/
 *.py[cod]
