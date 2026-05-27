@@ -5,10 +5,11 @@ Orchestrates data loading, training, validation, and testing.
 from src.dataset import load_data, create_datasets, create_dataloaders
 from src.model import get_model, get_loss_and_optimizer
 from src.train import train_model
-from src.inference import validate, test
+from src.inference import validate, test, ensemble_predict
 from metrics import evaluate_results, error_fn
+import torch
 
-from config import NUM_EPOCHS, OUTPUT_PRED, PATIENCE
+from config import NUM_EPOCHS, OUTPUT_PRED, PATIENCE, MODEL_NAME
 
 
 def main():
@@ -31,27 +32,39 @@ def main():
         train_df
     )
 
-    print("Initializing model...")
-    model, device = get_model() 
+    all_models = []
+    histories = []
 
-    loss_fn, optimizer, scheduler = get_loss_and_optimizer(model)
+    for model_name in MODEL_NAME:
+        print(f"\nTraining {model_name}")
 
-    model, history = train_model(
-        model=model,
-        training_loader=training_loader,
-        validation_loader=validation_loader,
-        loss_fn=loss_fn,
-        optimizer=optimizer,
-        scheduler=scheduler,
-        device=device,
-        num_epochs=NUM_EPOCHS,
-        patience=PATIENCE,
-        min_delta=0.0005
-    )
+        model, device = get_model(model_name)
+
+        loss_fn, optimizer, scheduler = (
+            get_loss_and_optimizer(model)
+        )
+
+        model, history = train_model(
+            model=model,
+            training_loader=training_loader,
+            validation_loader=validation_loader,
+            loss_fn=loss_fn,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            device=device,
+            num_epochs=NUM_EPOCHS,
+            patience=PATIENCE,
+            min_delta=0.0005
+        )
+
+        torch.save(model.state_dict(), f"{model_name}.pth")
+
+        all_models.append(model)
+        histories.append(history)
 
     # VALIDATION
     val_results, val_mae, metric_score = validate(
-        model,
+        all_models,
         validation_loader,
         device
     )
@@ -129,7 +142,7 @@ def main():
     print("\n====================================")
     print("TEST INFERENCE")
     print("====================================")
-    test(model, test_loader, device)
+    test(all_models, test_loader, device)
 
     print(f"\nPredictions saved to:")
     print(OUTPUT_PRED)
@@ -139,29 +152,43 @@ def main():
     print("TRAINING SUMMARY")
     print("====================================")
 
-    best_train_mae = min(
-        history["train_mae"]
-    )
+    for idx, model_name in enumerate(MODEL_NAME):
 
-    best_val_mae = min(
-        history["val_mae"]
-    )
+        print(f"\nModel: {model_name}")
 
-    print(f"\nBest Train MAE: {best_train_mae * 100:.2f}%")
+        model_history = histories[idx]
 
-    print(f"Best Validation MAE: {best_val_mae * 100:.2f}%")
-
-    generalization_gap = (
-        best_val_mae - best_train_mae
-    ) * 100
-
-    print(f"\nGeneralization Gap: {generalization_gap:.2f}%")
-
-    if generalization_gap > 5:
-        print(
-            "\nWARNING:"
-            " may overfit."
+        best_train_mae = min(
+            model_history["train_mae"]
         )
+
+        best_val_mae = min(
+            model_history["val_mae"]
+        )
+
+        generalization_gap = (
+            best_val_mae - best_train_mae
+        ) * 100
+
+        print(
+            f"Best Train MAE: "
+            f"{best_train_mae * 100:.2f}%"
+        )
+
+        print(
+            f"Best Validation MAE: "
+            f"{best_val_mae * 100:.2f}%"
+        )
+
+        print(
+            f"Generalization Gap: "
+            f"{generalization_gap:.2f}%"
+        )
+
+        if generalization_gap > 5:
+            print(
+                "WARNING: possible overfitting."
+            )
 
     print("\n========== DONE ==========")
 

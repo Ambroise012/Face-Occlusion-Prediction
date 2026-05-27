@@ -10,9 +10,10 @@ from config import MODEL_NAME, USE_CUDA, LR
 
 
 class OcclusionRegressor(nn.Module):
-    def __init__(self):
+    def __init__(self, model_name):
         super().__init__()
-        if MODEL_NAME == "efficientnet_b2":
+        self.model_name = model_name
+        if model_name == "efficientnet_b2":
             weights = models.EfficientNet_B2_Weights.DEFAULT
             self.backbone = models.efficientnet_b2(
                 weights=weights
@@ -31,7 +32,7 @@ class OcclusionRegressor(nn.Module):
                 nn.Sigmoid()
             )
 
-        elif MODEL_NAME == "efficientnet_b0":
+        elif model_name == "efficientnet_b0":
             weights = models.EfficientNet_B0_Weights.DEFAULT
             self.backbone = models.efficientnet_b0(
                 weights=weights
@@ -49,18 +50,56 @@ class OcclusionRegressor(nn.Module):
                 nn.Linear(128, 1),
                 nn.Sigmoid()
             )
+        elif model_name == "efficientnet_v2_s":
+            weights = (models.EfficientNet_V2_S_Weights.DEFAULT)
+            self.backbone = (
+                models.efficientnet_v2_s(
+                    weights=weights
+                )
+            )
+            in_features = (
+                self.backbone.classifier[1].in_features
+            )
+            self.backbone.classifier[1] = nn.Sequential(
+                nn.Dropout(0.4),
+                nn.Linear(in_features, 512),
+                nn.SiLU(),
+                nn.Dropout(0.3),
+                nn.Linear(512, 1),
+                nn.Sigmoid()
+            )
 
+        elif model_name == "convnext_tiny":
+            weights = models.ConvNeXt_Tiny_Weights.DEFAULT
+            self.backbone = models.convnext_tiny(
+                weights=weights
+            )
+            in_features = (
+                self.backbone.classifier[2].in_features
+            )
+            self.backbone.classifier[2] = nn.Sequential(
+                nn.LayerNorm(in_features),
+                nn.Linear(in_features, 512),
+                nn.GELU(),
+                nn.Dropout(0.4),
+                nn.Linear(512, 128),
+                nn.GELU(),
+                nn.Dropout(0.2),
+                nn.Linear(128, 1),
+                nn.Sigmoid()
+            )
+        
         else:
             raise ValueError(
-                f"Unknown model: {MODEL_NAME}"
+                f"Unknown model: {model_name}"
             )
 
     def forward(self, x):
         return self.backbone(x).squeeze(1)
 
 
-def get_model():
-    model = OcclusionRegressor()
+def get_model(model_name):
+    model = OcclusionRegressor(model_name)
 
     if USE_CUDA and torch.cuda.is_available():
         device = torch.device("cuda")
@@ -156,9 +195,19 @@ def get_loss_and_optimizer(model):
         weight_decay=1e-4
     )
 
-    # previous : CosineAnnealingLR
+    # previous : CosineAnne alingLR
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
         T_max=10
     )
+    # scheduler = (
+    #     torch.optim.lr_scheduler.ReduceLROnPlateau(
+    #         optimizer,
+    #         mode='min',
+    #         factor=0.5,
+    #         patience=2,
+    #         min_lr=1e-6
+    #     )
+    # )
+
     return loss_fn, optimizer, scheduler

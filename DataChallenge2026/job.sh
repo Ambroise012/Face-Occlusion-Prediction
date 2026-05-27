@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=version2
+#SBATCH --job-name=ensemble
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
-#SBATCH --time=02:00:00
+#SBATCH --time=24:00:00
 #SBATCH --partition=P100
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
