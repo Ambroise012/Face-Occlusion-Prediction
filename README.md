@@ -27,41 +27,7 @@ python main.py
 
 # 1 - Pipeline
 
-1. **Data Loading**
-
-   * Load training, validation, and test CSV files
-   * Normalize `FaceOcclusion` labels
-   * Create balanced occlusion/gender groups
-   * Apply stratified train/validation split
-
-2. **Dataset & DataLoader Creation**
-
-   * Build PyTorch datasets with augmentations
-   * Use a `WeightedRandomSampler` to reduce class imbalance
-
-3. **Model Training**
-
-   * Train one or multiple models (`MODEL_NAME`)
-   * Apply:
-
-     * Gradient clipping
-     * Learning-rate scheduling
-     * Early stopping
-   * Save the best checkpoint (`best_model.pth`)
-
-4. **Validation**
-
-   * Run ensemble validation using all trained models
-   * Compute:
-
-     * Validation MAE
-     * Fairness metrics
-     * Occlusion-level performance
-
-5. **Test Inference**
-
-   * Generate ensemble predictions on the test set
-   * Save predictions to:
+![pipeline](img/Data_Challenge.png)
 
 
 # 2 - Dataset
@@ -77,7 +43,7 @@ python main.py
 
 * `FaceOcclusion`:
 
-  * Continuous value between `0` and `1`
+  * between `0` and `1`
   * `0` = no occlusion
   * `1` = fully occluded face
 
@@ -86,7 +52,6 @@ python main.py
   * `0` = female
   * `1` = male
 
----
 
 # 3 - Methodology
 
@@ -107,21 +72,16 @@ Training images are augmented using:
 * Random erasing
 * Image normalization
 
-This improves robustness and generalization.
 
-
-## Balanced Sampling Strategy
+## Balanced Sampling
 
 To reduce dataset imbalance:
 
 * Occlusion scores are grouped into bins
 * Gender and occlusion bins are combined into groups
-* A `WeightedRandomSampler` is used to balance training batches
+* A `WeightSampler` is used to balance training batches
 
-This ensures fairer learning across:
-
-* Different occlusion levels
-* Male and female samples
+This ensures fairer learning across : Different occlusion levels ; Male and female samples
 
 
 ## Training
@@ -129,27 +89,21 @@ This ensures fairer learning across:
 The training pipeline includes:
 
 * Gradient clipping
-* Learning-rate scheduling
-* Validation monitoring
-* Automatic checkpoint saving
-* Early stopping
-
-### Early Stopping
-
-Training stops automatically when validation **MAE** no longer improves after a fixed number of epochs.
-
+* Loss : SmoothL1Loss (improved)
+* Optimizer : AdamW
+* Learning-rate scheduling : CosineAnnealingLR
+* Early stopping (based on MAE score)
+* Validation
+* Checkpoint saving
 
 ## Ensemble Inference
 
 Inference supports model ensembling:
 
-* Multiple trained models can be loaded
-* Predictions are averaged
+* Multiple trained models
+* Associate weight for predictions
 * Final predictions are clamped between `0` and `1`
 
-This improves stability and prediction accuracy.
-
----
 
 # 5 - Evaluation
 
