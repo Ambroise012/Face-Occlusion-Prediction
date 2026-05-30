@@ -37,18 +37,3 @@ def metric_fn(female_df, male_df):
     err_female = error_fn(female_df)
 
     return (err_male + err_female) / 2 + abs(err_male - err_female)
-
-def evaluate_results(results_df):
-    """
-    Evaluate results DataFrame and return metric score.
-
-    Args:
-        results_df: DataFrame with columns 'pred', 'target', 'gender'
-
-    Returns:
-        float: Final metric score
-    """
-    results_male = results_df.loc[results_df["gender"] == 1.0]
-    results_female = results_df.loc[results_df["gender"] == 0.0]
-
-    return metric_fn(results_female, results_male)
