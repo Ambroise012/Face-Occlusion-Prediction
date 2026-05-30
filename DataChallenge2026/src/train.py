@@ -4,42 +4,9 @@ Handles the training loop and model optimization.
 """
 
 import torch
+import os
 from tqdm import tqdm
-
-
-class EarlyStoppinng:
-    def __init__(
-            self,
-            patience=0,
-            min_delta=0.0005
-        ):
-        self.patience = patience
-        self.min_delta = min_delta
-        self.best_score = None
-        self.counter = 0
-        self.early_stop = False
-
-    def __call__(self, metric):
-
-        # lower MAE is better
-        score = -metric
-
-        if self.best_score is None:
-            self.best_score = score
-            return
-
-        # no significant improvement
-        if score < self.best_score + self.min_delta:
-            self.counter += 1
-            print(
-                f"EarlyStopping "
-                f"{self.counter}/{self.patience}"
-            )
-            if self.counter >= self.patience:
-                self.early_stop = True
-        else:
-            self.best_score = score
-            self.counter = 0 
+import matplotlib.pyplot as plt
 
 
 def train_model(
@@ -52,8 +19,12 @@ def train_model(
         device, 
         num_epochs, 
         patience=5, 
-        min_delta=0.0005
+        min_delta=0.0005,
+        model_name="model",
     ):
+    os.makedirs("checkpoints", exist_ok=True)
+    os.makedirs("figures", exist_ok=True)
+
     best_val_mae, early_stop_counter = float("inf"), 0
     history = {"train_loss": [], "train_mae": [], "val_loss": [], "val_mae": []}
 
@@ -138,12 +109,17 @@ def train_model(
         if improved:
             best_val_mae, early_stop_counter = epoch_val_mae, 0
 
-            torch.save({
-                'epoch': epoch,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'val_mae': epoch_val_mae,
-            }, "best_model.pth")
+            best_model_path = f"checkpoints/best_{model_name}.pth"
+
+            torch.save(
+                {
+                    'epoch': epoch,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'val_mae': epoch_val_mae,
+                },
+                best_model_path
+            )
 
             print(f"\nBest model saved (Val MAE: {epoch_val_mae*100:.2f}%)")
 
@@ -157,11 +133,85 @@ def train_model(
 
     # LOAD BEST MODEL
     print("\nLoading best model...")
-    checkpoint = torch.load("best_model.pth", map_location=device, weights_only=False)
+    checkpoint = torch.load(best_model_path, map_location=device, weights_only=False)
 
     model.load_state_dict(checkpoint['model_state_dict'])
 
     print(f"Best Validation MAE: {checkpoint['val_mae']*100:.2f}%")
+
+    # =========================================================
+    # PLOT TRAINING CURVES
+    # =========================================================
+
+    epochs = range(
+        1,
+        len(history["train_loss"]) + 1
+    )
+
+    # -----------------------------
+    # LOSS CURVES
+    # -----------------------------
+    plt.figure(figsize=(10, 5))
+
+    plt.plot(
+        epochs,
+        history["train_loss"],
+        label="Train Loss"
+    )
+
+    plt.plot(
+        epochs,
+        history["val_loss"],
+        label="Validation Loss"
+    )
+
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title(f"{model_name} - Loss Curves")
+    plt.legend()
+    plt.grid(True)
+
+    plt.savefig(
+        f"figures/{model_name}_loss.png",
+        bbox_inches="tight"
+    )
+
+    plt.close()
+
+    # -----------------------------
+    # MAE CURVES
+    # -----------------------------
+    plt.figure(figsize=(10, 5))
+
+    plt.plot(
+        epochs,
+        [x * 100 for x in history["train_mae"]],
+        label="Train MAE"
+    )
+
+    plt.plot(
+        epochs,
+        [x * 100 for x in history["val_mae"]],
+        label="Validation MAE"
+    )
+
+    plt.xlabel("Epoch")
+    plt.ylabel("MAE (%)")
+    plt.title(f"{model_name} - MAE Curves")
+    plt.legend()
+    plt.grid(True)
+
+    plt.savefig(
+        f"figures/{model_name}_mae.png",
+        bbox_inches="tight"
+    )
+
+    plt.close()
+
+    print("\nTraining curves saved in:")
+    print("figures/")
+
     print("\nTraining completed.")
+
 
     return model, history

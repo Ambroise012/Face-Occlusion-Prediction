@@ -5,15 +5,14 @@ Orchestrates data loading, training, validation, and testing.
 from src.dataset import load_data, create_datasets, create_dataloaders
 from src.model import get_model, get_loss_and_optimizer
 from src.train import train_model
-from src.inference import validate, test, ensemble_predict
-from metrics import evaluate_results, error_fn
+from src.inference import validate, test
+from metrics import error_fn
 import torch
 
 from config import NUM_EPOCHS, OUTPUT_PRED, PATIENCE, MODEL_NAME
 
 
 def main():
-    """Main execution function."""
     print("Loading and preparing data...")
 
     # Load data
@@ -54,7 +53,8 @@ def main():
             device=device,
             num_epochs=NUM_EPOCHS,
             patience=PATIENCE,
-            min_delta=0.0005
+            min_delta=0.0005,
+            model_name=model_name
         )
 
         torch.save(model.state_dict(), f"{model_name}.pth")
